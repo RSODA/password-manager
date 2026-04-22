@@ -25,10 +25,6 @@ func main() {
 		fmt.Println("Не удалось получить мастер-ключ:", err)
 		return
 	}
-	if err := crypto.ValidateOrCreateKeyCheck("master.keycheck", mk); err != nil {
-		fmt.Println("Мастер-пароль не совпадает с текущим хранилищем:", err)
-		return
-	}
 
 	repo := repo2.NewRepo("vault_06092006.json")
 	s := service.New(repo)

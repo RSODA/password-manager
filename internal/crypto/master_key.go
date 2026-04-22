@@ -2,13 +2,9 @@ package crypto
 
 import (
 	"crypto/rand"
-	"crypto/sha256"
 	"crypto/sha512"
-	"crypto/subtle"
-	"encoding/hex"
 	"errors"
 	"os"
-	"strings"
 
 	"golang.org/x/crypto/pbkdf2"
 )
@@ -50,28 +46,4 @@ func GetMasterKey(password string, saltPath string) ([]byte, error) {
 	mk := pbkdf2.Key([]byte(password), salt, iteration, 32, sha512.New)
 
 	return mk, nil
-}
-
-func ValidateOrCreateKeyCheck(path string, mk []byte) error {
-	sum := sha256.Sum256(mk)
-
-	stored, err := os.ReadFile(path)
-	if err == nil {
-		raw := strings.TrimSpace(string(stored))
-		expected, err := hex.DecodeString(raw)
-		if err != nil {
-			return err
-		}
-		if subtle.ConstantTimeCompare(expected, sum[:]) != 1 {
-			return errors.New("master password mismatch")
-		}
-		return nil
-	}
-
-	if !os.IsNotExist(err) {
-		return err
-	}
-
-	encoded := hex.EncodeToString(sum[:])
-	return os.WriteFile(path, []byte(encoded+"\n"), 0600)
 }
