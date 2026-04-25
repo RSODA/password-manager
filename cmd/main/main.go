@@ -18,7 +18,8 @@ func main() {
 
 	if len(input) < min_len {
 		fmt.Println("Ваша длина мастер пароля меньше: ", min_len)
-	}
+		return
+}
 
 	mk, err := crypto.GetMasterKey(input, "master.salt")
 	if err != nil {
