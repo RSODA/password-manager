@@ -28,8 +28,8 @@ func main() {
 
 	fmt.Println("Введите мастер пароль: ")
 	input, err := term.ReadPassword(int(os.Stdin.Fd()))
-	if err != nil {
-		fmt.Println(err)
+	if len(input) < min_len {
+		fmt.Println("Ваша длина мастер пароля меньше: ", min_len)
 		return
 	}
 
