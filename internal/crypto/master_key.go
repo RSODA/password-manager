@@ -34,7 +34,7 @@ func getOrCreateSalt(path string, saltLen int) ([]byte, error) {
 	return salt, nil
 }
 
-func GetMasterKey(password string, saltPath string) ([]byte, error) {
+func GetMasterKey(password []byte, saltPath string) ([]byte, error) {
 
 	iteration := 15000 + (9 * 5000)
 	saltLen := 16 + (2006 % 8)

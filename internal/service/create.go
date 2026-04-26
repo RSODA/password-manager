@@ -2,22 +2,24 @@ package service
 
 import (
 	"fmt"
+	"os"
 	"password-manager/internal/crypto"
 	"password-manager/internal/models"
+
+	"golang.org/x/term"
 )
 
-func (s *service) Create(mk []byte) {
+func (s *service) Create() {
 	var user models.Service
-	var plainPassword string
 
 	fmt.Println("Введите название сервиса ")
 	fmt.Scan(&user.ServiceName)
 	fmt.Println("Введите login пользователя")
 	fmt.Scan(&user.User.Username)
 	fmt.Println("Введите пароль")
-	fmt.Scan(&plainPassword)
+	plainPassword, err := term.ReadPassword(int(os.Stdin.Fd()))
 
-	result, err := crypto.Encrypt([]byte(plainPassword), mk)
+	result, err := crypto.Encrypt(plainPassword, s.mk)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -37,4 +39,6 @@ func (s *service) Create(mk []byte) {
 	}
 
 	fmt.Println(res)
+
+	s.DefaultWindow()
 }

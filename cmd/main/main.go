@@ -2,24 +2,41 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"password-manager/internal/crypto"
 	repo2 "password-manager/internal/repo"
 	"password-manager/internal/service"
+	"time"
+
+	"golang.org/x/term"
 )
 
 func main() {
-	var input string
-	var count int64
+	startTime := time.Now()
+	endTime := startTime.Add(time.Hour)
+
+	go func() {
+		for {
+			if time.Now().After(endTime) {
+				fmt.Println("Конец")
+				os.Exit(0)
+			}
+		}
+	}()
 
 	min_len := 8 + (6 % 5)
 
 	fmt.Println("Введите мастер пароль: ")
-	fmt.Scan(&input)
+	input, err := term.ReadPassword(int(os.Stdin.Fd()))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	if len(input) < min_len {
 		fmt.Println("Ваша длина мастер пароля меньше: ", min_len)
 		return
-}
+	}
 
 	mk, err := crypto.GetMasterKey(input, "master.salt")
 	if err != nil {
@@ -28,16 +45,7 @@ func main() {
 	}
 
 	repo := repo2.NewRepo("vault_06092006.json")
-	s := service.New(repo)
+	s := service.New(repo, mk)
 
-	fmt.Print("Выебрите действие: \n" +
-		"1. Добавить пароль\n" +
-		"2. Найти пароль")
-	fmt.Scan(&count)
-
-	if count == 1 {
-		s.Create(mk)
-	} else if count == 2 {
-		s.Get(mk)
-	}
+	s.DefaultWindow()
 }

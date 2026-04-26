@@ -3,16 +3,19 @@ package service
 import "password-manager/internal/repo"
 
 type Service interface {
-	Create(mk []byte)
-	Get(mk []byte)
+	Create()
+	Get()
+	DefaultWindow()
 }
 
 type service struct {
 	Repo repo.Repo
+	mk   []byte
 }
 
-func New(r repo.Repo) Service {
+func New(r repo.Repo, mk []byte) Service {
 	return &service{
 		Repo: r,
+		mk:   mk,
 	}
 }
