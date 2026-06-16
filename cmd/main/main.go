@@ -11,30 +11,38 @@ import (
 	"golang.org/x/term"
 )
 
+const (
+	accessStartHour = 9
+	accessEndHour   = 18
+	minPasswordLen  = 8 + (6 % 5)
+)
+
+func isAccessAllowed(now time.Time) bool {
+	hour := now.Hour()
+	return hour >= accessStartHour && hour < accessEndHour
+}
+
 func main() {
-	startTime := time.Now()
-	endTime := startTime.Add(time.Hour)
+	now := time.Now()
+	if !isAccessAllowed(now) {
+		fmt.Printf("Доступ разрешён только с %02d:00 до %02d:00. Текущее время: %s\n",
+			accessStartHour,
+			accessEndHour,
+			now.Format("15:04:05"),
+		)
+		os.Exit(1)
+	}
 
-	go func() {
-		for {
-			if time.Now().After(endTime) {
-				fmt.Println("Конец")
-				os.Exit(0)
-			}
-		}
-	}()
-
-	min_len := 8 + (6 % 5)
-
-	fmt.Println("Введите мастер пароль: ")
+	fmt.Print("Введите мастер-пароль: ")
 	input, err := term.ReadPassword(int(os.Stdin.Fd()))
-	if len(input) < min_len {
-		fmt.Println("Ваша длина мастер пароля меньше: ", min_len)
+	fmt.Println()
+	if err != nil {
+		fmt.Println("Ошибка чтения мастер-пароля:", err)
 		return
 	}
 
-	if len(input) < min_len {
-		fmt.Println("Ваша длина мастер пароля меньше: ", min_len)
+	if len(input) < minPasswordLen {
+		fmt.Println("Длина мастер-пароля меньше:", minPasswordLen)
 		return
 	}
 

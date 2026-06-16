@@ -1,20 +1,41 @@
 package service
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
 
 func (s *service) DefaultWindow() {
-	var count int
+	for {
+		fmt.Print("\nВыберите действие:\n" +
+			"1. Добавить пароль\n" +
+			"2. Найти пароль\n" +
+			"3. Выход\n" +
+			"> ")
 
-	fmt.Print("Выебрите действие: \n" +
-		"1. Добавить пароль\n" +
-		"2. Найти пароль")
-	fmt.Scan(&count)
+		input, err := s.reader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Ошибка чтения команды:", err)
+			return
+		}
 
-	if count == 1 {
-		s.Create()
-	} else if count == 2 {
-		s.Get()
-	} else {
-		fmt.Println("Ошибка, введите правильное значение!")
+		count, err := strconv.Atoi(strings.TrimSpace(input))
+		if err != nil {
+			fmt.Println("Ошибка, введите номер действия")
+			continue
+		}
+
+		switch count {
+		case 1:
+			s.Create()
+		case 2:
+			s.Get()
+		case 3:
+			fmt.Println("Выход")
+			return
+		default:
+			fmt.Println("Ошибка, введите правильное значение")
+		}
 	}
 }

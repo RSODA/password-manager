@@ -2,20 +2,29 @@ package service
 
 import (
 	"fmt"
+	"password-manager/internal/clipboard"
 	"password-manager/internal/crypto"
 	"password-manager/internal/models"
-
-	"github.com/atotto/clipboard"
+	"strings"
+	"time"
 )
 
 func (s *service) Get() {
-	var servicename string
 	var response models.Response
 
-	fmt.Println("Напишите название сервиса")
-	fmt.Scan(&servicename)
+	fmt.Print("Введите название сервиса: ")
+	serviceName, err := s.reader.ReadString('\n')
+	if err != nil {
+		fmt.Println("Ошибка чтения названия сервиса:", err)
+		return
+	}
+	serviceName = strings.TrimSpace(serviceName)
+	if serviceName == "" {
+		fmt.Println("Название сервиса не может быть пустым")
+		return
+	}
 
-	res, err := s.Repo.GetUser(servicename)
+	res, err := s.Repo.GetUser(serviceName)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -27,20 +36,27 @@ func (s *service) Get() {
 		return
 	}
 
-	fmt.Println(string(decrypted))
-
-	fmt.Println()
-
 	response.Username = res.Username
 	response.Password = string(decrypted)
 
-	err = clipboard.WriteAll(response.Password)
-	if err != nil {
-		fmt.Println("ошибка при записи в буфер!", err)
+	fmt.Println("Логин:", response.Username)
+
+	if err := clipboard.CopyText(response.Password); err != nil {
+		fmt.Println("Буфер обмена недоступен:", err)
+		fmt.Println("Пароль:", response.Password)
 		return
 	}
 
-	fmt.Println(response)
+	copiedAt := time.Now()
+	clearAt := copiedAt.Add(ClipboardTimeout)
 
-	s.DefaultWindow()
+	fmt.Printf("Пароль скопирован в буфер обмена в %s и будет очищен через %d секунд (%s)\n",
+		copiedAt.Format("15:04:05"),
+		int(ClipboardTimeout.Seconds()),
+		clearAt.Format("15:04:05"),
+	)
+
+	time.AfterFunc(ClipboardTimeout, func() {
+		_ = clipboard.Clear()
+	})
 }

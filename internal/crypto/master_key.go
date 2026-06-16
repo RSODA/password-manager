@@ -2,11 +2,10 @@ package crypto
 
 import (
 	"crypto/rand"
-	"crypto/sha512"
 	"errors"
 	"os"
 
-	"golang.org/x/crypto/pbkdf2"
+	"golang.org/x/crypto/argon2"
 )
 
 func getOrCreateSalt(path string, saltLen int) ([]byte, error) {
@@ -35,15 +34,11 @@ func getOrCreateSalt(path string, saltLen int) ([]byte, error) {
 }
 
 func GetMasterKey(password []byte, saltPath string) ([]byte, error) {
-
-	iteration := 15000 + (9 * 5000)
 	saltLen := 16 + (2006 % 8)
 	salt, err := getOrCreateSalt(saltPath, saltLen)
 	if err != nil {
 		return nil, err
 	}
 
-	mk := pbkdf2.Key([]byte(password), salt, iteration, 32, sha512.New)
-
-	return mk, nil
+	return argon2.IDKey(password, salt, 1, 64*1024, 4, 32), nil
 }

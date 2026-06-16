@@ -6,13 +6,8 @@ import (
 	"password-manager/internal/models"
 )
 
-type Entry struct {
-	Username string `json:"username"`
-	Password []byte `json:"password"`
-}
-
 func (r *repo) SaveUser(user *models.Service) (string, error) {
-	data := make(map[string]Entry)
+	data := make(map[string]models.User)
 
 	file, err := os.ReadFile(r.Filename)
 	if err == nil {
@@ -23,7 +18,7 @@ func (r *repo) SaveUser(user *models.Service) (string, error) {
 		return "", err
 	}
 
-	data[user.ServiceName] = Entry{
+	data[user.ServiceName] = models.User{
 		Username: user.User.Username,
 		Password: user.User.Password,
 	}
@@ -32,7 +27,7 @@ func (r *repo) SaveUser(user *models.Service) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if err := os.WriteFile(r.Filename, jsonData, 0644); err != nil {
+	if err := os.WriteFile(r.Filename, jsonData, 0600); err != nil {
 		return "", err
 	}
 
